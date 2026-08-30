@@ -4,8 +4,32 @@ import { redis } from "../lib/redis";
 const worker = new Worker(
   "taskQueue",
   async (job) => {
+    const { type, data } = job.data;
+
     console.log(`Processing job ${job.id}`);
-    console.log("Job data:", job.data);
+    console.log(`Job type: ${type}`);
+    console.log("Job data:", data);
+
+    switch (type) {
+      case "email":
+        console.log(`📧 Sending email to ${data.to}`);
+        break;
+
+      case "report":
+        console.log(`📊 Generating report: ${data.name}`);
+        break;
+
+      case "export":
+        console.log(`📦 Exporting data for ${data.userId}`);
+        break;
+
+      case "notification":
+        console.log(`🔔 Sending notification: ${data.message}`);
+        break;
+
+      default:
+        throw new Error(`Unknown job type: ${type}`);
+    }
 
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
@@ -29,4 +53,4 @@ worker.on("failed", (job, error) => {
   console.error(`❌ Job ${job?.id} failed:`, error.message);
 });
 
-console.log(" QueueFlow worker is running...");
+console.log("QueueFlow worker is running...");
