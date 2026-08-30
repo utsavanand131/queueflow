@@ -27,10 +27,15 @@ const worker = new Worker(
         console.log(`🔔 Sending notification: ${data.message}`);
         break;
 
+      case "failing-test":
+        console.log("💥 Simulating job failure...");
+        throw new Error("Intentional test failure");
+
       default:
         throw new Error(`Unknown job type: ${type}`);
     }
 
+    // Simulate background processing
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
     console.log(`Job ${job.id} completed`);
@@ -53,4 +58,4 @@ worker.on("failed", (job, error) => {
   console.error(`❌ Job ${job?.id} failed:`, error.message);
 });
 
-console.log("QueueFlow worker is running...");
+console.log("🚀 QueueFlow worker is running...");
