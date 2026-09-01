@@ -1,6 +1,64 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+type QueueStats = {
+  waiting: number;
+  active: number;
+  completed: number;
+  failed: number;
+  delayed: number;
+};
+
+type Job = {
+  id: string;
+  name: string;
+  status: string;
+  attemptsMade: number;
+  data: unknown;
+};
 
 export default function Home() {
+  const [stats, setStats] = useState<QueueStats>({
+    waiting: 0,
+    active: 0,
+    completed: 0,
+    failed: 0,
+    delayed: 0,
+  });
+
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchDashboardData() {
+      try {
+        const [statsResponse, jobsResponse] = await Promise.all([
+          fetch("/api/jobs"),
+          fetch("/api/jobs/list"),
+        ]);
+
+        const statsResult = await statsResponse.json();
+        const jobsResult = await jobsResponse.json();
+
+        if (statsResult.success) {
+          setStats(statsResult.stats);
+        }
+
+        if (jobsResult.success) {
+          setJobs(jobsResult.jobs);
+        }
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchDashboardData();
+  }, []);
+
   return (
     <main className="min-h-screen bg-[#111111] text-[#f4ead5]">
       {" "}
@@ -13,7 +71,6 @@ export default function Home() {
             <p className="mb-2 text-xs font-black tracking-[0.3em] text-[#f26a3d]">
               BACKGROUND JOB CONTROL{" "}
             </p>
-            ```
             <h1 className="text-4xl font-black tracking-tight sm:text-5xl">
               QUEUE<span className="text-[#f26a3d]">FLOW</span>
             </h1>
@@ -29,11 +86,36 @@ export default function Home() {
           </div>
         </header>
         <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <StatCard title="Waiting" value="0" symbol="01" />
-          <StatCard title="Active" value="0" symbol="02" />
-          <StatCard title="Completed" value="2" symbol="03" highlighted />
-          <StatCard title="Failed" value="1" symbol="04" />
-          <StatCard title="Delayed" value="0" symbol="05" />
+          <StatCard
+            title="Waiting"
+            value={loading ? "—" : String(stats.waiting)}
+            symbol="01"
+          />
+
+          <StatCard
+            title="Active"
+            value={loading ? "—" : String(stats.active)}
+            symbol="02"
+          />
+
+          <StatCard
+            title="Completed"
+            value={loading ? "—" : String(stats.completed)}
+            symbol="03"
+            highlighted
+          />
+
+          <StatCard
+            title="Failed"
+            value={loading ? "—" : String(stats.failed)}
+            symbol="04"
+          />
+
+          <StatCard
+            title="Delayed"
+            value={loading ? "—" : String(stats.delayed)}
+            symbol="05"
+          />
         </section>
         <section className="overflow-hidden border-2 border-[#f4ead5] bg-[#181818] shadow-[6px_6px_0px_#f26a3d]">
           <div className="flex flex-col gap-4 border-b-2 border-[#3a3a3a] p-5 sm:flex-row sm:items-center sm:justify-between">
@@ -67,14 +149,26 @@ export default function Home() {
               </thead>
 
               <tbody>
-                <JobRow id="2" type="email" status="completed" attempts="1" />
-
-                <JobRow
-                  id="3"
-                  type="failing-test"
-                  status="failed"
-                  attempts="3"
-                />
+                {jobs.length > 0 ? (
+                  jobs.map((job) => (
+                    <JobRow
+                      key={job.id}
+                      id={job.id}
+                      type={job.name}
+                      status={job.status}
+                      attempts={String(job.attemptsMade)}
+                    />
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      className="px-5 py-10 text-center text-sm font-bold uppercase tracking-widest text-[#6f685d]"
+                    >
+                      No jobs found
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -149,7 +243,7 @@ function JobRow({
 
   return (
     <tr className="border-b border-[#2d2d2d] transition-colors hover:bg-[#202020]">
-      <td className="px-5 py-5 font-black text-[#f26a3d]">#{id} </td>
+      <td className="px-5 py-5 font-black text-[#f26a3d]">#{id}</td>
       <td className="px-5 py-5">
         <span className="font-bold uppercase tracking-wide">{type}</span>
       </td>
@@ -158,7 +252,9 @@ function JobRow({
           className={`inline-flex items-center gap-2 border px-3 py-1.5 text-xs font-black uppercase tracking-wide ${
             isCompleted
               ? "border-[#f26a3d] bg-[#f26a3d] text-[#111111]"
-              : "border-[#d94b35] bg-[#d94b35]/10 text-[#ff7157]"
+              : status === "failed"
+                ? "border-[#d94b35] bg-[#d94b35]/10 text-[#ff7157]"
+                : "border-[#8f8778] bg-[#8f8778]/10 text-[#a89f8c]"
           }`}
         >
           <span className="h-2 w-2 rounded-full bg-current" />
