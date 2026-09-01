@@ -1,6 +1,39 @@
 import { NextResponse } from "next/server";
 import { taskQueue } from "@/lib/queue";
 
+export async function GET() {
+  try {
+    const counts = await taskQueue.getJobCounts(
+      "waiting",
+      "active",
+      "completed",
+      "failed",
+      "delayed",
+    );
+
+    return NextResponse.json({
+      success: true,
+      stats: {
+        waiting: counts.waiting,
+        active: counts.active,
+        completed: counts.completed,
+        failed: counts.failed,
+        delayed: counts.delayed,
+      },
+    });
+  } catch (error) {
+    console.error("Failed to get queue stats:", error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to get queue statistics",
+      },
+      { status: 500 },
+    );
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
