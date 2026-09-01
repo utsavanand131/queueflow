@@ -258,25 +258,40 @@ function JobRow({
 
   return (
     <tr className="border-b border-[#2d2d2d] transition-colors hover:bg-[#202020]">
-      <td className="px-5 py-5 font-black text-[#f26a3d]">#{id}</td>
-      <td className="px-5 py-5">
-        <span className="font-bold uppercase tracking-wide">{type}</span>
+      <td className="px-5 py-5 font-black text-[#f26a3d]">
+        <Link href={`/jobs/${id}`} className="block">
+          #{id}{" "}
+        </Link>{" "}
       </td>
       <td className="px-5 py-5">
-        <span
-          className={`inline-flex items-center gap-2 border px-3 py-1.5 text-xs font-black uppercase tracking-wide ${
-            isCompleted
-              ? "border-[#f26a3d] bg-[#f26a3d] text-[#111111]"
-              : status === "failed"
-                ? "border-[#d94b35] bg-[#d94b35]/10 text-[#ff7157]"
-                : "border-[#8f8778] bg-[#8f8778]/10 text-[#a89f8c]"
-          }`}
+        <Link
+          href={`/jobs/${id}`}
+          className="block font-bold uppercase tracking-wide hover:text-[#f26a3d]"
         >
-          <span className="h-2 w-2 rounded-full bg-current" />
-          {status}
-        </span>
+          {type}
+        </Link>
       </td>
-      <td className="px-5 py-5 font-bold text-[#a89f8c]">{attempts}</td>
+      <td className="px-5 py-5">
+        <Link href={`/jobs/${id}`} className="block">
+          <span
+            className={`inline-flex items-center gap-2 border px-3 py-1.5 text-xs font-black uppercase tracking-wide ${
+              isCompleted
+                ? "border-[#f26a3d] bg-[#f26a3d] text-[#111111]"
+                : status === "failed"
+                  ? "border-[#d94b35] bg-[#d94b35]/10 text-[#ff7157]"
+                  : "border-[#8f8778] bg-[#8f8778]/10 text-[#a89f8c]"
+            }`}
+          >
+            <span className="h-2 w-2 rounded-full bg-current" />
+            {status}
+          </span>
+        </Link>
+      </td>
+      <td className="px-5 py-5 font-bold text-[#a89f8c]">
+        <Link href={`/jobs/${id}`} className="block">
+          {attempts}
+        </Link>
+      </td>
     </tr>
   );
 }
