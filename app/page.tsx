@@ -1,69 +1,118 @@
-import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="min-h-screen bg-slate-950 text-white">
+      <div className="mx-auto max-w-7xl px-6 py-8">
+        <header className="mb-10 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">QueueFlow</h1>
+            <p className="mt-1 text-sm text-slate-400">
+              Background job processing dashboard
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-400">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            Redis Online
+          </div>
+        </header>
+
+        <section className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <StatCard title="Waiting" value="0" />
+          <StatCard title="Active" value="0" />
+          <StatCard title="Completed" value="2" />
+          <StatCard title="Failed" value="1" />
+          <StatCard title="Delayed" value="0" />
+        </section>
+
+        <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">Recent Jobs</h2>
+              <p className="mt-1 text-sm text-slate-400">
+                Monitor your background jobs
+              </p>
+            </div>
+
+            <Link
+              href="/jobs/new"
+              className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-slate-200"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+              Create Job
+            </Link>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-slate-800 text-slate-400">
+                  <th className="px-4 py-3 font-medium">ID</th>
+                  <th className="px-4 py-3 font-medium">Type</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Attempts</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <JobRow id="2" type="email" status="completed" attempts="1" />
+
+                <JobRow
+                  id="3"
+                  type="failing-test"
+                  status="failed"
+                  attempts="3"
+                />
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function StatCard({ title, value }: { title: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+      <p className="text-sm text-slate-400">{title}</p>
+      <p className="mt-2 text-3xl font-bold">{value}</p>
     </div>
+  );
+}
+
+function JobRow({
+  id,
+  type,
+  status,
+  attempts,
+}: {
+  id: string;
+  type: string;
+  status: string;
+  attempts: string;
+}) {
+  const isCompleted = status === "completed";
+
+  return (
+    <tr className="border-b border-slate-800 last:border-0">
+      <td className="px-4 py-4 font-medium">#{id}</td>
+
+      <td className="px-4 py-4 text-slate-300">{type}</td>
+
+      <td className="px-4 py-4">
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-medium ${
+            isCompleted
+              ? "bg-emerald-500/10 text-emerald-400"
+              : "bg-red-500/10 text-red-400"
+          }`}
+        >
+          {status}
+        </span>
+      </td>
+
+      <td className="px-4 py-4 text-slate-300">{attempts}</td>
+    </tr>
   );
 }
