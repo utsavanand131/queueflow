@@ -32,15 +32,21 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     async function fetchDashboardData() {
       try {
         const [statsResponse, jobsResponse] = await Promise.all([
-          fetch("/api/jobs"),
-          fetch("/api/jobs/list"),
+          fetch("/api/jobs", { cache: "no-store" }),
+          fetch("/api/jobs/list", { cache: "no-store" }),
         ]);
 
         const statsResult = await statsResponse.json();
         const jobsResult = await jobsResponse.json();
+
+        if (!isMounted) {
+          return;
+        }
 
         if (statsResult.success) {
           setStats(statsResult.stats);
@@ -52,11 +58,20 @@ export default function Home() {
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
 
     fetchDashboardData();
+
+    const interval = setInterval(fetchDashboardData, 3000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   return (
