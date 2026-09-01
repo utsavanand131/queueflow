@@ -22,6 +22,8 @@ export default function JobDetailsPage({
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [retrying, setRetrying] = useState(false);
+  const [retryMessage, setRetryMessage] = useState("");
 
   useEffect(() => {
     async function fetchJob() {
@@ -48,6 +50,45 @@ export default function JobDetailsPage({
 
     fetchJob();
   }, [params]);
+
+  async function handleRetry() {
+    if (!job) {
+      return;
+    }
+
+    setRetrying(true);
+    setRetryMessage("");
+
+    try {
+      const response = await fetch(`/api/jobs/${job.id}/retry`, {
+        method: "POST",
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Failed to retry job");
+      }
+
+      setRetryMessage("Job queued for retry.");
+
+      const refreshedResponse = await fetch(`/api/jobs/${job.id}`, {
+        cache: "no-store",
+      });
+
+      const refreshedResult = await refreshedResponse.json();
+
+      if (refreshedResult.success) {
+        setJob(refreshedResult.job);
+      }
+    } catch (error) {
+      setRetryMessage(
+        error instanceof Error ? error.message : "Failed to retry job",
+      );
+    } finally {
+      setRetrying(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -147,6 +188,36 @@ export default function JobDetailsPage({
             </p>
 
             <p className="mt-2 font-bold text-[#ff7157]">{job.failedReason}</p>
+          </section>
+        )}
+        {isFailed && (
+          <section className="mt-6 border-2 border-[#f26a3d] bg-[#181818] p-5">
+            <p className="text-xs font-black tracking-[0.25em] text-[#f26a3d]">
+              RECOVERY
+            </p>
+
+            <h2 className="mt-1 text-xl font-black uppercase">
+              Retry Failed Job
+            </h2>
+
+            <p className="mt-2 text-sm text-[#8f8778]">
+              Requeue this job and let the worker process it again.
+            </p>
+
+            <button
+              type="button"
+              onClick={handleRetry}
+              disabled={retrying}
+              className="mt-5 border-2 border-[#111111] bg-[#f26a3d] px-5 py-3 text-sm font-black uppercase tracking-wide text-[#111111] transition-transform hover:-translate-y-1 hover:shadow-[4px_4px_0px_#f4ead5] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {retrying ? "Retrying..." : "↻ Retry Job"}
+            </button>
+
+            {retryMessage && (
+              <p className="mt-4 text-sm font-bold text-[#f26a3d]">
+                {retryMessage}
+              </p>
+            )}
           </section>
         )}
         <div className="mt-8">
