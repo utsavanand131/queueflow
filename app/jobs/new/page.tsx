@@ -4,7 +4,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-type JobType = "email" | "report" | "export" | "notification";
+type JobType = "email" | "report" | "export" | "notification" | "failing-test";
 
 export default function NewJobPage() {
   const router = useRouter();
@@ -49,6 +49,12 @@ export default function NewJobPage() {
       case "notification":
         data = {
           message,
+        };
+        break;
+
+      case "failing-test":
+        data = {
+          message: "This job should fail once and succeed on retry",
         };
         break;
     }
@@ -123,6 +129,7 @@ export default function NewJobPage() {
               <option value="report">Report</option>
               <option value="export">Export</option>
               <option value="notification">Notification</option>
+              <option value="failing-test">Failing Test</option>
             </select>
           </div>
 
@@ -178,8 +185,22 @@ export default function NewJobPage() {
                 onChange={(event) => setMessage(event.target.value)}
                 placeholder="Your notification message..."
                 rows={4}
+                required
                 className="w-full resize-none border-2 border-[#f4ead5] bg-[#111111] px-4 py-3 text-sm font-medium text-[#f4ead5] outline-none placeholder:text-[#514d46] focus:border-[#f26a3d]"
               />
+            </div>
+          )}
+
+          {type === "failing-test" && (
+            <div className="border-2 border-[#d94b35] bg-[#d94b35]/10 p-5">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-[#ff7157]">
+                Failure Test
+              </p>
+
+              <p className="mt-2 text-sm font-bold text-[#ff7157]">
+                This job intentionally fails on the first attempt and succeeds
+                when retried.
+              </p>
             </div>
           )}
 

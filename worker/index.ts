@@ -1,44 +1,48 @@
-import { Worker } from "bullmq";
-import { redis } from "../lib/redis";
+import { Worker, Job } from "bullmq";
+import { redis } from "@/lib/redis";
 
 const worker = new Worker(
   "taskQueue",
-  async (job) => {
-    const { type, data } = job.data;
-
+  async (job: Job) => {
     console.log(`Processing job ${job.id}`);
-    console.log(`Job type: ${type}`);
-    console.log("Job data:", data);
+    console.log(`Job type: ${job.name}`);
+    console.log("Job data:", job.data);
 
-    switch (type) {
-      case "email":
-        console.log(`📧 Sending email to ${data.to}`);
-        break;
-
-      case "report":
-        console.log(`📊 Generating report: ${data.name}`);
-        break;
-
-      case "export":
-        console.log(`📦 Exporting data for ${data.userId}`);
-        break;
-
-      case "notification":
-        console.log(`🔔 Sending notification: ${data.message}`);
-        break;
-
-      case "failing-test":
-        console.log("💥 Simulating job failure...");
-        throw new Error("Intentional test failure");
-
-      default:
-        throw new Error(`Unknown job type: ${type}`);
+    if (job.name === "email") {
+      console.log(`📧 Sending email to ${job.data.to}`);
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      console.log("Email simulation completed");
     }
 
-    // Simulate background processing
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    if (job.name === "report") {
+      console.log(`📊 Generating report: ${job.data.name}`);
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      console.log("Report generation completed");
+    }
 
-    console.log(`Job ${job.id} completed`);
+    if (job.name === "export") {
+      console.log(`📦 Exporting data for user: ${job.data.userId}`);
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      console.log("Export simulation completed");
+    }
+
+    if (job.name === "notification") {
+      console.log(`🔔 Sending notification: ${job.data.message}`);
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      console.log("Notification simulation completed");
+    }
+
+    if (job.name === "failing-test") {
+      if (job.attemptsMade === 0) {
+        console.log("💥 First attempt - simulating failure...");
+        throw new Error("Intentional first-attempt failure");
+      }
+
+      console.log("🔄 Retry attempt detected...");
+      console.log("✅ Job succeeds on retry!");
+
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
 
     return {
       success: true,
@@ -51,11 +55,18 @@ const worker = new Worker(
 );
 
 worker.on("completed", (job) => {
+  console.log(`Job ${job.id} completed`);
   console.log(`✅ Job ${job.id} completed successfully`);
 });
 
 worker.on("failed", (job, error) => {
-  console.error(`❌ Job ${job?.id} failed:`, error.message);
+  if (job) {
+    console.log(`❌ Job ${job.id} failed: ${error.message}`);
+  }
+});
+
+worker.on("error", (error) => {
+  console.error("Worker error:", error);
 });
 
 console.log("🚀 QueueFlow worker is running...");
