@@ -9,25 +9,26 @@ const worker = new Worker(
     console.log("Job data:", job.data);
 
     if (job.name === "email") {
-      console.log(`📧 Sending email to ${job.data.to}`);
+      console.log(`📧 Sending email to ${job.data.data.to}`);
+      console.log(`Subject: ${job.data.data.subject}`);
       await new Promise((resolve) => setTimeout(resolve, 3000));
       console.log("Email simulation completed");
     }
 
     if (job.name === "report") {
-      console.log(`📊 Generating report: ${job.data.name}`);
+      console.log(`📊 Generating report: ${job.data.data.name}`);
       await new Promise((resolve) => setTimeout(resolve, 3000));
       console.log("Report generation completed");
     }
 
     if (job.name === "export") {
-      console.log(`📦 Exporting data for user: ${job.data.userId}`);
+      console.log(`📦 Exporting data for user: ${job.data.data.userId}`);
       await new Promise((resolve) => setTimeout(resolve, 3000));
       console.log("Export simulation completed");
     }
 
     if (job.name === "notification") {
-      console.log(`🔔 Sending notification: ${job.data.message}`);
+      console.log(`🔔 Sending notification: ${job.data.data.message}`);
       await new Promise((resolve) => setTimeout(resolve, 3000));
       console.log("Notification simulation completed");
     }
