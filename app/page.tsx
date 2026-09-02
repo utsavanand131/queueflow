@@ -187,16 +187,9 @@ export default function Home() {
               </tbody>
             </table>
           </div>
-
-          <div className="border-t-2 border-[#3a3a3a] bg-[#121212] px-5 py-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-[#6f685d]">
-              BullMQ / Redis / Worker Status: Operational
-            </p>
-          </div>
         </section>
         <footer className="mt-8 flex flex-col gap-2 border-t border-[#333333] pt-5 text-xs font-bold uppercase tracking-widest text-[#625d54] sm:flex-row sm:items-center sm:justify-between">
           <span>QUEUEFLOW v0.1</span>
-          <span>LOCAL DEVELOPMENT ENVIRONMENT</span>
         </footer>
       </div>
     </main>
